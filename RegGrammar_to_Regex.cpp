@@ -32,11 +32,34 @@ void remove_trap(multimap<char, pair<string, char>>& grammar)
 	}
 }
 
-string proccess_grammar(multimap<char, pair<string, char>>& grammar, char start)
+string proccess_grammar(multimap<char, pair<string, char>>& grammar, char start, map<char, int>& last_use)
 {
 	static string res;
+	char sec_var;
+	bool flag = false;
+	if (start == NULL) return res;
 	auto itr = grammar.find(start);
+	if (itr->second.first == "@") return res;
+	last_use[start] = res.size();
 	res += itr->second.first;
+	if (start == itr->second.second)
+	{
+		res.insert(res.begin() + last_use[start], 1, '(');
+		res += ")*";
+		flag = true;
+	}
+	else proccess_grammar(grammar, itr->second.second, last_use);
+	sec_var = itr->first;
+	itr++;
+	if (itr != grammar.end())
+	{
+		if (sec_var == itr->first && itr->second.first != "@")
+		{
+			if (!flag) res += '+';
+			res += itr->second.first;
+			proccess_grammar(grammar, itr->second.second, last_use);
+		}
+	}
 	return res;
 }
 
@@ -59,7 +82,7 @@ int main()
 	}
 	remove_trap(grammar);
 	init_last_use(last_use, grammar);
-	entry = proccess_grammar(grammar, 'S');
+	entry = proccess_grammar(grammar, 'S', last_use);
 	cout << entry;
 	return 0;
 }
