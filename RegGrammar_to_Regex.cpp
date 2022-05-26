@@ -35,10 +35,12 @@ void remove_trap(multimap<char, pair<string, char>>& grammar)
 string proccess_grammar(multimap<char, pair<string, char>>& grammar, char start, map<char, int>& last_use)
 {
 	static string res;
-	char sec_var;
+	//char sec_var;
 	bool flag = false;
+	int repeat;
 	if (start == NULL) return res;
 	auto itr = grammar.find(start);
+	repeat = grammar.count(start);
 	if (itr->second.first == "@") return res;
 	last_use[start] = res.size();
 	res += itr->second.first;
@@ -49,17 +51,30 @@ string proccess_grammar(multimap<char, pair<string, char>>& grammar, char start,
 		flag = true;
 	}
 	else proccess_grammar(grammar, itr->second.second, last_use);
-	sec_var = itr->first;
-	itr++;
-	if (itr != grammar.end())
+	if (repeat > 2)
 	{
-		if (sec_var == itr->first && itr->second.first != "@")
+		last_use[start] = res.size();
+		res += "(";
+	}
+	for (int i = 1; i < repeat; i++)
+	{
+		//sec_var = itr->first;
+		itr++;
+		if (itr->second.first != "@")
 		{
-			if (!flag) res += '+';
+			if (i != 1) res += "+";
+			/*if (!flag)
+			{
+				res.insert(res.begin() + last_use[start], 1, '(');
+				res += '+';
+				last_use[start] = res.size() - 2;
+			}
+			else last_use[start] = res.size();*/
 			res += itr->second.first;
 			proccess_grammar(grammar, itr->second.second, last_use);
 		}
 	}
+	if (repeat > 2) res += ')';
 	return res;
 }
 
