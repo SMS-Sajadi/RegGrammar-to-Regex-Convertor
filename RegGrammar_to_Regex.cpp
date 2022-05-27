@@ -35,46 +35,105 @@ void remove_trap(multimap<char, pair<string, char>>& grammar)
 string proccess_grammar(multimap<char, pair<string, char>>& grammar, char start, map<char, int>& last_use)
 {
 	static string res;
-	//char sec_var;
-	bool flag = false;
+	static vector<char> uses;
+	static bool terminal_end = false;
 	int repeat;
-	if (start == NULL) return res;
+	if (start == NULL)
+	{
+		terminal_end = true;
+		return res;
+	}
+	for (int i = 0 ; i < uses.size(); i++)
+	{
+		if (uses[i] == start)
+		{
+			terminal_end = false;
+			for (int j = i + 1; j < uses.size();)
+			{
+				uses.erase(uses.begin() + j);
+			}
+			res.insert(res.begin() + last_use[start], 1, '(');
+			res += ")*";
+			return res;
+		}
+	}
 	auto itr = grammar.find(start);
 	repeat = grammar.count(start);
-	if (itr->second.first == "@") return res;
-	last_use[start] = res.size();
-	res += itr->second.first;
-	if (start == itr->second.second)
+	if (itr->second.first == "@")
 	{
-		res.insert(res.begin() + last_use[start], 1, '(');
-		res += ")*";
-		flag = true;
+		terminal_end = true;
+		return res;
 	}
-	else proccess_grammar(grammar, itr->second.second, last_use);
-	if (repeat > 2)
+	for (int i = 1; i <= repeat; i++)
 	{
-		last_use[start] = res.size();
-		res += "(";
-	}
-	for (int i = 1; i < repeat; i++)
-	{
-		//sec_var = itr->first;
-		itr++;
-		if (itr->second.first != "@")
+		//last_use[start] = res.size();
+		uses.push_back(start);
+		if (i != 1)
 		{
-			if (i != 1) res += "+";
-			/*if (!flag)
+			itr++;
+			if (terminal_end)
 			{
 				res.insert(res.begin() + last_use[start], 1, '(');
-				res += '+';
-				last_use[start] = res.size() - 2;
+				res += ")+";
+				terminal_end = false;
 			}
-			else last_use[start] = res.size();*/
+			last_use[start] = res.size();
+			//uses.push_back(start);
 			res += itr->second.first;
 			proccess_grammar(grammar, itr->second.second, last_use);
 		}
+		else
+		{
+			last_use[start] = res.size();
+			res += itr->second.first;
+			//uses.push_back(start);
+			proccess_grammar(grammar, itr->second.second, last_use);
+		}
+		if (terminal_end)
+		{
+			//res.insert(res.begin() + last_use[start], 1, '(');
+			//res += ")";
+			//terminal_end = false;
+		}
+		else
+		{
+			//res.insert(res.begin() + last_use[start], 1, '(');
+			//res += ")*";
+		}
 	}
-	if (repeat > 2) res += ')';
+	
+	//res += itr->second.first;
+	//if (start == itr->second.second)
+	//{
+	//	res.insert(res.begin() + last_use[start], 1, '(');
+	//	res += ")*";
+	//	flag = true;
+	//}
+	//else proccess_grammar(grammar, itr->second.second, last_use);
+	//if (repeat > 2)
+	//{
+	//	last_use[start] = res.size();
+	//	res += "(";
+	//}
+	//for (int i = 1; i < repeat; i++)
+	//{
+	//	//sec_var = itr->first;
+	//	itr++;
+	//	if (itr->second.first != "@")
+	//	{
+	//		if (i != 1) res += "+";
+	//		/*if (!flag)
+	//		{
+	//			res.insert(res.begin() + last_use[start], 1, '(');
+	//			res += '+';
+	//			last_use[start] = res.size() - 2;
+	//		}
+	//		else last_use[start] = res.size();*/
+	//		res += itr->second.first;
+	//		proccess_grammar(grammar, itr->second.second, last_use);
+	//	}
+	//}
+	//if (repeat > 2) res += ')';
 	return res;
 }
 
